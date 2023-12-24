@@ -197,6 +197,14 @@ HRESULT CFW1GlyphSheet::createDeviceResources() {
 					else {
 						m_pCoordBuffer = pBuffer;
 						m_pCoordBufferSRV = pBufferSRV;
+						
+#if _DEBUG
+						const std::size_t uSize = 256; char szData[uSize]{ 0 };
+						UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphSheet::m_pCoordBuffer 0x%p", m_pCoordBuffer);
+						m_pCoordBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+						uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphSheet::m_pCoordBufferSRV 0x%p", m_pCoordBufferSRV);
+						m_pCoordBufferSRV->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
 					}
 					
 					if(FAILED(hResult))
@@ -207,6 +215,14 @@ HRESULT CFW1GlyphSheet::createDeviceResources() {
 			if(SUCCEEDED(hResult)) {
 				m_pTexture = pTexture;
 				m_pTextureSRV = pTextureSRV;
+				
+#if _DEBUG
+				const std::size_t uSize = 256; char szData[uSize]{ 0 };
+				UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphSheet::m_pTexture 0x%p", m_pTexture);
+				m_pTexture->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+				uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphSheet::m_pTextureSRV 0x%p", m_pTextureSRV);
+				m_pTextureSRV->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
 			}
 			else
 				pTextureSRV->Release();

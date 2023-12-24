@@ -290,6 +290,16 @@ HRESULT CFW1GlyphRenderStates::createQuadShaders() {
 						m_pVertexShaderClipQuad = pVSClip;
 						m_pQuadInputLayout = pInputLayout;
 						
+#if _DEBUG
+						const std::size_t uSize = 256; char szData[uSize]{ 0 };
+						UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pVertexShaderQuad 0x%p", m_pVertexShaderQuad);
+						m_pVertexShaderQuad->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+						uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pVertexShaderClipQuad 0x%p", m_pVertexShaderClipQuad);
+						m_pVertexShaderClipQuad->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+						uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pQuadInputLayout 0x%p", m_pQuadInputLayout);
+						m_pQuadInputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
+						
 						hResult = S_OK;
 					}
 					
@@ -565,6 +575,18 @@ HRESULT CFW1GlyphRenderStates::createGlyphShaders() {
 								m_pPointInputLayout = pInputLayout;
 								m_hasGeometryShader = true;
 								
+#if _DEBUG
+								const std::size_t uSize = 256; char szData[uSize]{ 0 };
+								UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pVertexShaderPoint 0x%p", m_pVertexShaderPoint);
+								m_pVertexShaderPoint->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+								uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pGeometryShaderPoint 0x%p", m_pGeometryShaderPoint);
+								m_pGeometryShaderPoint->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+								uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pGeometryShaderClipPoint 0x%p", m_pGeometryShaderClipPoint);
+								m_pGeometryShaderClipPoint->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+								uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pPointInputLayout 0x%p", m_pPointInputLayout);
+								m_pPointInputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
+								
 								hResult = S_OK;
 							}
 							
@@ -712,6 +734,14 @@ HRESULT CFW1GlyphRenderStates::createPixelShaders() {
 					m_pPixelShader = pPS;
 					m_pPixelShaderClip = pPSClip;
 					
+#if _DEBUG
+					const std::size_t uSize = 256; char szData[uSize]{ 0 };
+					UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pPixelShader 0x%p", m_pPixelShader);
+					m_pPixelShader->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+					uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pPixelShaderClip 0x%p", m_pPixelShaderClip);
+					m_pPixelShaderClip->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
+					
 					hResult = S_OK;
 				}
 				
@@ -749,6 +779,12 @@ HRESULT CFW1GlyphRenderStates::createConstantBuffer() {
 		// Success
 		m_pConstantBuffer = pConstantBuffer;
 				
+#if _DEBUG
+		const std::size_t uSize = 256; char szData[uSize]{ 0 };
+		UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pConstantBuffer 0x%p", m_pConstantBuffer);
+		pConstantBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
+		
 		hResult = S_OK;
 	}
 
@@ -834,6 +870,18 @@ HRESULT CFW1GlyphRenderStates::createRenderStates(bool anisotropicFiltering) {
 					m_pSamplerState = pSamplerState;
 					m_pRasterizerState = pRasterizerState;
 					m_pDepthStencilState = pDepthStencilState;
+					
+#if _DEBUG
+					const std::size_t uSize = 256; char szData[uSize]{ 0 };
+					UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pBlendState 0x%p", m_pBlendState);
+					pBlendState->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+					uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pSamplerState 0x%p", m_pSamplerState);
+					pSamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+					uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pRasterizerState 0x%p", m_pRasterizerState);
+					pRasterizerState->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+					uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphRenderStates::m_pDepthStencilState 0x%p", m_pDepthStencilState);
+					pDepthStencilState->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
 					
 					hResult = S_OK;
 				}

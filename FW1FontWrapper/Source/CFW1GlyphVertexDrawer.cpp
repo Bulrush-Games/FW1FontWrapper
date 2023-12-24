@@ -118,6 +118,14 @@ HRESULT CFW1GlyphVertexDrawer::createBuffers() {
 			m_pVertexBuffer = pVertexBuffer;
 			m_pIndexBuffer = pIndexBuffer;
 			
+#if _DEBUG
+			const std::size_t uSize = 256; char szData[uSize]{ 0 };
+			UINT uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphVertexDrawer::m_pVertexBuffer 0x%p", m_pVertexBuffer) + 1;
+			pVertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+			uDataSize = _snprintf_s(szData, uSize, _TRUNCATE, "CFW1GlyphVertexDrawer::m_pIndexBuffer 0x%p", m_pIndexBuffer) + 1;
+			pIndexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, uDataSize, szData);
+#endif // _DEBUG
+			
 			hResult = S_OK;
 		}
 		
