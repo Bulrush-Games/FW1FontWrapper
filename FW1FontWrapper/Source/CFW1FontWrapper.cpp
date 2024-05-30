@@ -85,6 +85,11 @@ HRESULT CFW1FontWrapper::initFontWrapper(
 	)
 		return E_INVALIDARG;
 	
+	IDWriteFontCollection *pFontCollection;
+	hResult = pGlyphProvider->GetDWriteFontCollection(&pFontCollection);
+	if (FAILED(hResult))
+		return hResult;
+	
 	pDevice->AddRef();
 	m_pDevice = pDevice;
 	m_featureLevel = m_pDevice->GetFeatureLevel();
@@ -107,7 +112,7 @@ HRESULT CFW1FontWrapper::initFontWrapper(
 		IDWriteTextFormat *pTextFormat;
 		hResult = m_pDWriteFactory->CreateTextFormat(
 			pDefaultFontParams->pszFontFamily,
-			NULL,
+			pFontCollection,
 			pDefaultFontParams->FontWeight,
 			pDefaultFontParams->FontStyle,
 			pDefaultFontParams->FontStretch,
@@ -125,6 +130,8 @@ HRESULT CFW1FontWrapper::initFontWrapper(
 			hResult = S_OK;
 		}
 	}
+
+	SAFE_RELEASE(pFontCollection);
 	
 	return hResult;
 }
