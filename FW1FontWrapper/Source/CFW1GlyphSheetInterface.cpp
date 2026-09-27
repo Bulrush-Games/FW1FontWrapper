@@ -223,11 +223,22 @@ void STDMETHODCALLTYPE CFW1GlyphSheet::Flush(ID3D11DeviceContext *pContext) {
 		LeaveCriticalSection(&m_sheetCriticalSection);
 		
 		if(updatedGlyphCount > 0) {
+			// ID3D11DeviceContext::UpdateSubresource with a non-zero-offset pDstBox on a deferred
+			// context is documented as unreliable if the driver doesn't support command lists
+			// natively (D3D11_FEATURE_DATA_THREADING::DriverCommandLists), since the runtime's own
+			// software emulation of the call mishandles the box offset. See the Remarks section:
+			// https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-id3d11devicecontext-updatesubresource
+			// UpdateSubresource1's CopyFlags removes that ambiguity unconditionally, so prefer it
+			// whenever available (Windows 8+/Platform Update for Windows 7, always present on the
+			// engine's supported targets); fall back to UpdateSubresource otherwise.
+			ID3D11DeviceContext1 *pContext1 = NULL;
+			pContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&pContext1));
+
 			// Update coord buffer
 			if(m_hardwareCoordBuffer) {
 				UINT startIndex = glyphCount - updatedGlyphCount;
 				UINT endIndex = glyphCount;
-				
+
 				D3D11_BOX dstBox;
 				ZeroMemory(&dstBox, sizeof(dstBox));
 				dstBox.left = startIndex * sizeof(FW1_GLYPHCOORDS);
@@ -236,21 +247,35 @@ void STDMETHODCALLTYPE CFW1GlyphSheet::Flush(ID3D11DeviceContext *pContext) {
 				dstBox.bottom = 1;
 				dstBox.front = 0;
 				dstBox.back = 1;
-				
-				pContext->UpdateSubresource(
-					m_pCoordBuffer,
-					0,
-					&dstBox,
-					m_glyphCoords + startIndex,
-					0,
-					0
-				);
+
+				if(pContext1 != NULL) {
+					// Newly-appended coords only: never overlaps a range the GPU might still be reading.
+					pContext1->UpdateSubresource1(
+						m_pCoordBuffer,
+						0,
+						&dstBox,
+						m_glyphCoords + startIndex,
+						0,
+						0,
+						D3D11_COPY_NO_OVERWRITE
+					);
+				}
+				else {
+					pContext->UpdateSubresource(
+						m_pCoordBuffer,
+						0,
+						&dstBox,
+						m_glyphCoords + startIndex,
+						0,
+						0
+					);
+				}
 			}
-			
+
 			// Update texture
 			if(dirtyRect.right > dirtyRect.left && dirtyRect.bottom > dirtyRect.top) {
 				UINT8 *srcMem = m_textureData;
-				
+
 				D3D11_BOX dstBox;
 				ZeroMemory(&dstBox, sizeof(dstBox));
 				dstBox.left = dirtyRect.left;
@@ -259,18 +284,32 @@ void STDMETHODCALLTYPE CFW1GlyphSheet::Flush(ID3D11DeviceContext *pContext) {
 				dstBox.bottom = dirtyRect.bottom;
 				dstBox.front = 0;
 				dstBox.back = 1;
-				
+
 				// Update each mip-level
 				for(UINT i=0; i < m_mipLevelCount; ++i) {
-					pContext->UpdateSubresource(
-						m_pTexture,
-						D3D11CalcSubresource(i, 0, m_mipLevelCount),
-						&dstBox,
-						srcMem + dstBox.top * (m_sheetWidth >> i) + dstBox.left,
-						m_sheetWidth >> i,
-						0
-					);
-					
+					if(pContext1 != NULL) {
+						// Newly-rasterized glyph region only: same "never overlaps" reasoning as above.
+						pContext1->UpdateSubresource1(
+							m_pTexture,
+							D3D11CalcSubresource(i, 0, m_mipLevelCount),
+							&dstBox,
+							srcMem + dstBox.top * (m_sheetWidth >> i) + dstBox.left,
+							m_sheetWidth >> i,
+							0,
+							D3D11_COPY_NO_OVERWRITE
+						);
+					}
+					else {
+						pContext->UpdateSubresource(
+							m_pTexture,
+							D3D11CalcSubresource(i, 0, m_mipLevelCount),
+							&dstBox,
+							srcMem + dstBox.top * (m_sheetWidth >> i) + dstBox.left,
+							m_sheetWidth >> i,
+							0
+						);
+					}
+
 					if(i+1 < m_mipLevelCount) {
 						UINT8 *nextMip = srcMem + (m_sheetWidth >> i) * (m_sheetHeight >> i);
 						
@@ -295,8 +334,11 @@ void STDMETHODCALLTYPE CFW1GlyphSheet::Flush(ID3D11DeviceContext *pContext) {
 					}
 				}
 			}
+
+			if(pContext1 != NULL)
+				pContext1->Release();
 		}
-		
+
 		// This sheet is now static, save some memory
 		if(m_static) {
 			delete[] m_textureData;
